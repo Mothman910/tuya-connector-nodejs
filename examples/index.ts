@@ -1,4 +1,4 @@
-import { TuyaContext } from '../src';
+import { TuyaContext } from "@tuya/tuya-connector-nodejs";
 // const { TuyaContext } = require('../lib/index');
 // import { TuyaContext } from '@tuya/tuya-connector-nodejs';
 
@@ -12,38 +12,35 @@ import { TuyaContext } from '../src';
  */
 
 const context = new TuyaContext({
-  baseUrl: '',
-  accessKey: '',
-  secretKey: '',
+  baseUrl: "https://openapi.tuyaeu.com",
+  accessKey: "u7uvu4gggt9r8pp5wr4n",
+  secretKey: "7c05947f13124c718e51211562310225",
 });
 
 const main = async () => {
-  // auto init token
-  // await context.client.init();
-  const page_size = 100;
-  let last_row_key = "";
-  // const res  = await context.assets.childAssets({
-  //   asset_id: '-1',
-  //   page_size,
-  //   last_row_key,
-  // });
-  // all api request you can use:
-  const res = await context.request({
-    path: `/v1.0/iot-02/assets/-1/sub-assets`,
-    method: 'GET',
-    query: {
-      page_size,
-      last_row_key,
-      key1: '支持中文',
-      key2: [{name: 'support'}, {age: 'array'}, {name: 'object'}],
-}
+  // Define the device ID
+  const device_id = "bfda16fb291bc033ac4nqm";
+  // Query device details
+  const devicedetail = await context.device.detail({
+    device_id: device_id,
   });
-  if(!res.success) {
+  if (!devicedetail.success) {
     new Error();
   }
-  console.log(res);
+  console.log("Device details:", devicedetail);
+  // Send commands
+  const commands = await context.request({
+    path: `/v1.0/iot-03/devices/${device_id}/commands`,
+    method: "POST",
+    body: {
+      commands: [{ code: "switch_led", value: false }],
+    },
+  });
+  if (!commands.success) {
+    new Error();
+  }
+  console.log("Execution result:", commands);
 };
-
-main().catch(err => {
+main().catch((err) => {
   console.log(err);
 });
